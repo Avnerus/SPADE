@@ -58,10 +58,12 @@ class Pix2pixDataset(BaseDataset):
         # Label Image
         label_path = self.label_paths[index]
         label = Image.open(label_path)
+        print("Image size {}".format(label.size))
         params = get_params(self.opt, label.size)
         transform_label = get_transform(self.opt, params, method=Image.NEAREST, normalize=False)
         label_tensor = transform_label(label) * 255.0
         label_tensor[label_tensor == 255] = self.opt.label_nc  # 'unknown' is opt.label_nc
+
 
         # input image (real images)
         image_path = self.image_paths[index]
@@ -86,6 +88,7 @@ class Pix2pixDataset(BaseDataset):
             else:
                 instance_tensor = transform_label(instance)
 
+
         input_dict = {'label': label_tensor,
                       'instance': instance_tensor,
                       'image': image_tensor,
@@ -95,6 +98,34 @@ class Pix2pixDataset(BaseDataset):
         # Give subclasses a chance to modify the final output
         self.postprocess(input_dict)
 
+        #print("Label tensor shape: {}".format(input_dict['label'].shape))
+
+        return input_dict
+
+    def get_item_from_images(self, label, instance):
+        #print("SPADE Image size {}".format(label.size))
+        params = get_params(self.opt, label.size)
+        transform_label = get_transform(self.opt, params, method=Image.NEAREST, normalize=False)
+        label_tensor = transform_label(label) * 255.0
+        label_tensor[label_tensor == 255] = self.opt.label_nc  # 'unknown' is opt.label_nc
+
+        label_tensor = label_tensor.view(1,1,256,256)
+        #print("label tesnor shape: {}".format(label_tensor.shape))
+
+        if instance.mode == 'L':
+            instance_tensor = transform_label(instance) * 255
+            instance_tensor = instance_tensor.long()
+        else:
+            instance_tensor = transform_label(instance)
+
+        instance_tensor = instance_tensor.view(1,1,256,256)
+        #print("instance tesnor shape: {}".format(instance_tensor.shape))
+
+        input_dict = {'label': label_tensor,
+                      'instance': instance_tensor,
+                      'image': None,
+                      'path': None
+                      }
         return input_dict
 
     def postprocess(self, input_dict):

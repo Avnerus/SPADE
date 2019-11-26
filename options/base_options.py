@@ -96,7 +96,7 @@ class BaseOptions():
         if opt.load_from_opt_file:
             parser = self.update_options_from_file(parser, opt)
 
-        opt = parser.parse_args()
+        opt, unknown = parser.parse_known_args()
         self.parser = parser
         return opt
 
@@ -156,6 +156,7 @@ class BaseOptions():
 
         # Set semantic_nc based on the option.
         # This will be convenient in many places
+        print("label: {} dontcare: {} no instance {}".format(opt.label_nc,opt.contain_dontcare_label,opt.no_instance))
         opt.semantic_nc = opt.label_nc + \
             (1 if opt.contain_dontcare_label else 0) + \
             (0 if opt.no_instance else 1)

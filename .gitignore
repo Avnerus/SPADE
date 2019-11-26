@@ -5,3 +5,5 @@ results/
 *.zip
 *.pkl
 *.pyc
+datasets/coco_stuff/*
+*.swp
